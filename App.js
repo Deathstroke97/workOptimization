@@ -1,20 +1,17 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, Platform } from 'react-native';
 import { createMaterialBottomTabNavigator } from 'react-navigation-material-bottom-tabs'
-import { createMaterialTopTabNavigator } from 'react-navigation'
 import MyIcon from 'react-native-vector-icons/Ionicons';
 import { Icon, Header } from 'react-native-elements'
-import CustomHeader from './components/CustomHeader';
-
+import { createStackNavigator } from "react-navigation";
 
 import ProfileScreen from './screens/ProfileScreen';
 import HomeScreen from './screens/HomeScreen';
+import RecentProjectsScreen from './screens/RecentProjectsScreen';
+import NewProjectsScreen from './screens/NewProjectsScreen';
 import DetailScreen from './screens/DetailScreen';
-import { withNavigation } from 'react-navigation';
-
-
-
-
+import ConfigProjectScreen from './screens/ConfigProjectScreen'
+import AddTaskScreen from './screens/AddTaskScreen';
 
 class App extends Component {
   render() {  
@@ -26,10 +23,35 @@ class App extends Component {
   }
 }
 
+const HomeStack = createStackNavigator({
+  Home: {
+    screen: HomeScreen,
+  },
+  Recent: {
+    screen: RecentProjectsScreen,
+  },
+  New: {
+    screen: NewProjectsScreen
+  },
+  Detail: {
+    screen: DetailScreen,
+  },
+  Config: {
+    screen: ConfigProjectScreen
+  },
+  AddTask: {
+    screen: AddTaskScreen
+  }
+  
+}, {
+  initialRouteName: 'Home',
+  
+});
+
 
 const BottomTabNavigator = createMaterialBottomTabNavigator({
   home: {
-    screen: HomeScreen,
+    screen: HomeStack,
     navigationOptions: {
       tabBarLabel: 'Home',
       tabBarIcon: ({ tintColor }) => (

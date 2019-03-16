@@ -1,34 +1,44 @@
 import React, { Component } from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, FlatList } from 'react-native';
 
 
 const {height, width} = Dimensions.get('window');
 
 class Projects extends Component {
+
+    _keyExtractor = (item, index) => item.id;
+
+    renderItem = item => {
+        return (
+            <View key={item.id} style={[styles.box, {backgroundColor: this.props.color}]}>
+            <View style={styles.content}>
+                <View style={styles.contentDetail}>
+                    <Text style={styles.descTitle}>Title - </Text>
+                    <Text style={styles.description}>{item.title}</Text>
+                </View>
+                <View style={styles.contentDetail}>
+                    <Text style={styles.descTitle}>Attached to - </Text>
+                    <Text style={styles.description}>{item.attachedTo}</Text>
+                </View>
+                <View style={[styles.contentDetail, {position: 'absolute', top: 50}]}>
+                    <Text style={styles.descTitle}>Bonus - </Text>
+                    <Text style={styles.description}>{item.bonus}</Text>
+                </View>
+                
+                </View>
+            </View>
+        )
+    }
+
     render() {
         return(
             <View style={styles.container}>
-                {
-                   this.props.reports.map(item => (
-                        <View key={item.id} style={styles.box}>
-                            <View style={styles.content}>
-                                <View style={styles.contentDetail}>
-                                    <Text style={styles.descTitle}>Title - </Text>
-                                    <Text style={styles.description}>{item.title}</Text>
-                                </View>
-                                <View style={styles.contentDetail}>
-                                    <Text style={styles.descTitle}>Attached to - </Text>
-                                    <Text style={styles.description}>{item.attachedTo}</Text>
-                                </View>
-                                <View style={[styles.contentDetail, {position: 'absolute', top: 50}]}>
-                                    <Text style={styles.descTitle}>Bonus - </Text>
-                                    <Text style={styles.description}>{item.bonus}</Text>
-                                </View>
-                                
-                            </View>
-                        </View>
-                    ))
-                }
+                <FlatList 
+                    keyExtractor={this._keyExtractor}
+                    data={this.props.data}
+                    extraData={this.props.data}
+                    renderItem={({ item }) => this.renderItem(item)}
+                />
             </View>
         )
     }
@@ -40,7 +50,7 @@ const styles = StyleSheet.create({
         height: 150,
         marginRight: 40,
         marginTop: 10,
-        backgroundColor: '#47B17C',   //#66BB6A
+        // backgroundColor: '#47B17C',   //#66BB6A
         marginBottom: 20,
         borderRadius: 10,
         right: 20,
