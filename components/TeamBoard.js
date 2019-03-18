@@ -4,6 +4,7 @@ import { ListItem } from 'react-native-elements';
 
 
 
+
 class TeamBoard extends Component {
 
 
@@ -15,20 +16,21 @@ class TeamBoard extends Component {
 
     render() {
         return (
-            this.props.team.map((member, index) => (
-              <TouchableOpacity  key={index} onPress={() => this.handlePress(member)}>
-                <ListItem
+            this.props.team.map((member, index) => {
+              if (member.name == undefined || member.surname === undefined) return
+              return <TouchableOpacity  key={index} onPress={() => this.handlePress(member)}>
+                {member.name !== undefined && <ListItem
                   key={index}
                   leftAvatar={{
                     source: { uri: member.avatar_url },
                     showEditButton: false,
                   }}
-                  title={member.name}
+                  title={member.name + ' ' + member.surname}
                   subtitle={member.role}
                   chevron
-              />
+              />}
               </TouchableOpacity>
-            ))
+            })
         )
     }
 }

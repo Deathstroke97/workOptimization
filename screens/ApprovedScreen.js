@@ -5,13 +5,10 @@ import Projects from '../components/Projects';
 
 
 
-class NewProjectsScreen extends Component {
-       
-    static navigationOptions = ({ navigation }) => {
-        return {
-          headerTitle: navigation.getParam('data')[0].attachedTo.type,
-        };
-      };
+class ApprovedScreen extends Component {
+    static navigationOptions = {
+        headerTitle: 'Approved Projects'
+    }    
 
     render() {
         const { navigation } = this.props;
@@ -25,7 +22,7 @@ class NewProjectsScreen extends Component {
     }
 }
 
-export default NewProjectsScreen;
+export default ApprovedScreen;
 
 const styles = StyleSheet.create({
     container: {

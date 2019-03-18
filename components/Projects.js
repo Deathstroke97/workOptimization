@@ -2,15 +2,18 @@ import React, { Component } from 'react';
 import { View, Text, Dimensions, StyleSheet, FlatList } from 'react-native';
 
 
+
 const {height, width} = Dimensions.get('window');
 
 class Projects extends Component {
 
-    _keyExtractor = (item, index) => item.id;
+    _keyExtractor = (item, index) => item.description;
 
-    renderItem = item => {
+
+    renderItem = (item, index) => {
+        
         return (
-            <View key={item.id} style={[styles.box, {backgroundColor: this.props.color}]}>
+            <View key={index} style={[styles.box, {backgroundColor: this.props.color}]}>
             <View style={styles.content}>
                 <View style={styles.contentDetail}>
                     <Text style={styles.descTitle}>Title - </Text>
@@ -18,7 +21,7 @@ class Projects extends Component {
                 </View>
                 <View style={styles.contentDetail}>
                     <Text style={styles.descTitle}>Attached to - </Text>
-                    <Text style={styles.description}>{item.attachedTo}</Text>
+                    <Text style={styles.description}>{item.attachedTo.fullName}</Text>
                 </View>
                 <View style={[styles.contentDetail, {position: 'absolute', top: 50}]}>
                     <Text style={styles.descTitle}>Bonus - </Text>
@@ -31,12 +34,14 @@ class Projects extends Component {
     }
 
     render() {
+        // console.log('active projects: ', this.props.active)
+        const data = this.props.active ? this.props.active : this.props.reports
         return(
             <View style={styles.container}>
                 <FlatList 
                     keyExtractor={this._keyExtractor}
-                    data={this.props.data}
-                    extraData={this.props.data}
+                    data={data}
+                    // extraData={this.props.data}
                     renderItem={({ item }) => this.renderItem(item)}
                 />
             </View>

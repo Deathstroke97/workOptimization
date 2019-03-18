@@ -9,17 +9,25 @@ import { Platform } from 'expo-core';
 
 
 class DashBoard extends Component {
-    
+   
     render() {
+        const { approved, finished, NEW } = this.props
+        let newReports = [approved, finished, NEW]
         return(
             <ScrollView style={styles.container}>
                 <View style={styles.reportsStyle}>
-                    <Reports reports={this.props.reports} navigation={this.props.navigation}/>
+                    <Reports 
+                        approved={approved}
+                        finished={finished}
+                        NEW={NEW}
+                        newReports={newReports}
+                        reports={this.props.reports} 
+                        navigation={this.props.navigation}/>
                 </View>
                 
                 <View style={{flex: 3}}>
                 <Text style={styles.textStyle}>Current Workflow</Text>
-                    <Projects data={this.props.data} color={this.props.color}/>
+                    <Projects active={this.props.active} data={this.props.data} color={this.props.color}/>
                 </View>
             </ScrollView>  
         )

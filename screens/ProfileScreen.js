@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { ListItem, Avatar } from 'react-native-elements';
+import { View, Text, StyleSheet, AsyncStorage } from 'react-native';
+import { ListItem, Avatar, Button } from 'react-native-elements';
+import { connect } from 'react-redux';
+
 
 
 
@@ -16,9 +18,18 @@ const list = [
     
   ]
 
-class DetailScreen extends Component {
+class ProfileScreen extends Component {
     
+    handlePress = async() => {
+        await AsyncStorage.removeItem('user')
+        await AsyncStorage.removeItem('token')
+        this.props.clearUser()
+        this.props.navigation.navigate('Auth')
+        
+    }
+
     render() {
+        console.log('redux: ', this.props.userData)
         const member = {
             name: 'Azat Saparbekov',
             role: 'Vice Chairman',
@@ -44,7 +55,7 @@ class DetailScreen extends Component {
                 
                 <ListItem
                     title={'Name'}
-                    rightElement={<Text>{member.name}</Text>}
+                    rightElement={<Text>{this.props.userData.displayName}</Text>}
                 />
                 <ListItem
                     title={'Role'}
@@ -56,7 +67,12 @@ class DetailScreen extends Component {
                 />
                 <ListItem
                     title={'E-mail'}
-                    rightElement={<Text>{member.email}</Text>}
+                    rightElement={<Text>{this.props.userData.email}</Text>}
+                />
+                <Button
+                    title="Log out"
+                    color="red"
+                    onPress={this.handlePress}
                 />
 
                 </View>
@@ -65,7 +81,22 @@ class DetailScreen extends Component {
     }
 }
 
-export default DetailScreen;
+const mapStateToProps = ({ auth }) => {
+    return { userData: auth.data }
+}
+
+const mapDispathToProps = dispatch => {
+    return {
+        saveUser: (user) => dispatch({ type: 'success', payload: user }),
+        clearUser: () => dispatch({type: 'clearUser'})
+    }
+}
+
+export default connect(mapStateToProps, mapDispathToProps)(ProfileScreen);
+
+
+
+
 
 const styles = StyleSheet.create({
     avatar: {

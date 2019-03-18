@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, LayoutAnimation, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, LayoutAnimation, TouchableOpacity, Image, AsyncStorage, ActivityIndicator } from 'react-native';
 import { Header, SearchBar } from 'react-native-elements'
 
 import MyIcon from 'react-native-vector-icons/Ionicons';
@@ -8,11 +8,17 @@ import ScrollableTabView, {DefaultTabBar, } from 'react-native-scrollable-tab-vi
 
 import DashBoard from '../components/DashBoard';
 import TeamBoard from '../components/TeamBoard.js';
-
+import { connect } from 'react-redux';
+import _ from 'lodash';
+import * as firebase from 'firebase';
 
 
 const reports = [
-    {text: 'Recent Completed', data: [
+    {
+        text: 'Approved', data: []
+    },
+
+    {text: 'Finished', data: [
         {
             id: '1',
             title: 'Building Website',
@@ -165,13 +171,174 @@ class HomeScreen extends Component {
     state = {
         search: '',
         showSearchBar: false,
-        filtered: reports[0].data
+        filtered: reports[3].data,
+        active: null,
+        finished: null,
+        approved: null,
+        NEW: null,
+        fullNames: []
     };
 
-    componentDidMount() {
+    componentWillReceiveProps(nextProps) {
+
+        if (nextProps.mainData) {
+            let active = [];
+            let finished = [];
+            let approved = [];
+            let NEW = []
+
+            let name;
+            let surname;
+            
+            const DATA = {...nextProps.mainData}
+
+            let fullNames = []
+           
+            for (let employee in DATA) {
+                name = DATA[employee].name + ' ';
+                surname = DATA[employee].surname
+                let obj = {
+                    name,
+                    surname
+                }
+                if (surname !== "undefined" || surname !== undefined) {
+                    console.log('surname: ', surname)
+                    fullNames[fullNames.length++] = obj
+                }
+                
+                for (let tasks in DATA[employee]) {
+                    
+                    for (let task in DATA[employee][tasks]) {
+                        
+                        if (typeof DATA[employee][tasks][task] === 'object' &&
+                                (DATA[employee][tasks][task] !== null || DATA[employee][tasks][task] !== undefined)
+                            ) {
+                            console.log('task-',DATA[employee][tasks][task] )
+                            switch (DATA[employee][tasks][task].status) {
+                                case 'finished' :
+                                    name = DATA[employee].name + ' ';
+                                    surname = DATA[employee].surname
+                                    DATA[employee][tasks][task]['attachedTo'] = {}
+                                    DATA[employee][tasks][task]['attachedTo'].fullName = `${name}${surname}`
+                                    DATA[employee][tasks][task]['attachedTo'].color= '#4286f4'
+                                    DATA[employee][tasks][task]['attachedTo'].type = 'Finished'
+                                    finished[finished.length++] = DATA[employee][tasks][task]
+
+                                    break;
+                                case 'active': 
+                                    name = DATA[employee].name + ' ';
+                                    surname = DATA[employee].surname
+                                    DATA[employee][tasks][task]['attachedTo'] = {}
+                                    DATA[employee][tasks][task]['attachedTo'].fullName = `${name}${surname}`
+                                    DATA[employee][tasks][task]['attachedTo'].type = 'Active'
+                                    active[active.length++] = DATA[employee][tasks][task]
+                                    break;
+                                case 'approved': 
+                                    name = DATA[employee].name + ' ';
+                                    surname = DATA[employee].surname
+                                    DATA[employee][tasks][task]['attachedTo'] = {}
+                                    DATA[employee][tasks][task]['attachedTo'].fullName = `${name}${surname}`
+                                    DATA[employee][tasks][task]['attachedTo'].color= 'green'
+                                    DATA[employee][tasks][task]['attachedTo'].type = 'Approved'
+                                    approved[approved.length++] = DATA[employee][tasks][task]
+                                    break;
+                                case 'new':
+                                    name = DATA[employee].name + ' ';
+                                    surname = DATA[employee].surname
+                                    DATA[employee][tasks][task]['attachedTo'] = {}
+                                    DATA[employee][tasks][task]['attachedTo'].fullName = `${name}${surname}`
+                                    DATA[employee][tasks][task]['attachedTo'].color= '#8f9fba'
+                                    DATA[employee][tasks][task]['attachedTo'].type = 'New'
+                                    NEW[NEW.length++] = DATA[employee][tasks][task]
+                                default: {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // console.log('fullNames: ', fullNames.slice(1))
+            // this.props.writeFullNames(fullNames)
+            // console.log('active: ', active)
+            // console.log('finished: ', finished)
+            // console.log('approved: ', approved)
+            // console.log('new: ', NEW)
+            console.log('fullnames++++++++++: ', fullNames)
+            this.setState({
+                active,
+                finished,
+                approved,
+                NEW,
+                fullNames: fullNames
+            }, () => console.log('MMA', this.state.fullNames))
+            
+        }
+
+        if (nextProps.userData) {
+            let uid = nextProps.userData.uid
+        
+            if (uid === "azat.saparbekov@gmail.com") {
+                uid = uid.replace(/(_)|(\.)|(-)/g, '');
+                console.log('uid: ', uid)
+                firebase.database().ref(`users/${uid}` ).set({
+                    manager: true,
+                    name: '',
+                    surname: '',
+                    tasks: '',
+
+                });
+            }
+            else {
+                uid = uid.replace(/(_)|(\.)|(-)/g, '');
+                firebase.database().ref('users/' + uid ).set({
+                    manager: false,
+                }); 
+            }
+
+
+        }
+        
+    }
+
+
+    async componentWillMount() {
+        var self = this;
+        firebase.database().ref('/users').once('value').then(function(snapshot) {
+            console.log('snapshot: ', snapshot.val())
+            self.props.saveData(snapshot.val())
+        })
+
+        // firebase.database().ref('users/' + 'askar2002@mailru').on('value', (snapshot) => {
+        //     const highscore = snapshot.val().manager;
+        //     console.log("New high score: " + highscore);
+        //   });
+
+        let user = await AsyncStorage.getItem('user')
+        this.props.saveUser(JSON.parse(user))
+    }
+
+    
+
+    async componentDidMount() {
+
+        
+        // const ref = Firebase.database().ref('users');
+        // ref.on('value', snapshot => {
+        //     const val = snapshot.val();
+        //     console.log(val);
+        // });
+          
+
+
         this.reportData = reports.map(report => {
             return report.data
         })
+        AsyncStorage.getItem('token')
+        .then((res) => console.log('token async: ', res))
+        .then(() => AsyncStorage.getItem)
+
+        
     }
     
     searchFilterFunction = text => {    
@@ -194,7 +361,7 @@ class HomeScreen extends Component {
         let { showSearchBar } = this.state;
         this.setState({
           showSearchBar: !showSearchBar,
-          filtered: reports[0].data,
+          filtered: reports[3].data,
         });
 
 
@@ -213,7 +380,18 @@ class HomeScreen extends Component {
     )
    
     render() {
-        console.log('color: ', reports[2].color)
+
+        if (!this.props.mainData) {
+            return (
+            <View style={[styles.containerIndicator, styles.horizontalIndicator]}>
+                <ActivityIndicator size="large" color="#0000ff"  />
+            </View>
+            )
+        }
+
+
+
+        
         let header = <Header
                         leftComponent={<Text style={styles.headerTextStyle}>Projects</Text>}
                         rightComponent={this.renderRightComponent()}
@@ -245,13 +423,20 @@ class HomeScreen extends Component {
                     renderTabBar={() => <DefaultTabBar />}
                 >
                     <DashBoard tabLabel='DASHBOARD' 
+                        approved={this.state.approved}
+                        finished={this.state.finished}
+                        NEW={this.state.NEW}
                         reports={reports} 
                         data={this.state.filtered} 
-                        color={reports[2].color}
+                        active={this.state.active}
+                        color={reports[3].color}
                         navigation={this.props.navigation}></DashBoard>
-                    <TeamBoard tabLabel="MY TEAM" team={team} navigation={this.props.navigation}></TeamBoard>
+                    <TeamBoard tabLabel="MY TEAM" team={this.state.fullNames} navigation={this.props.navigation} ></TeamBoard>
                 </ScrollableTabView>
-                <TouchableOpacity style={styles.touch} onPress={() => this.props.navigation.navigate('AddTask')}>
+                <TouchableOpacity style={styles.touch} onPress={() => this.props.navigation.navigate('AddTask', {
+                    data: this.state.fullNames,
+                    
+                })}>
                          <Image style={styles.myAddBtn} source={require('../img/plus-3.png')} />
                 </TouchableOpacity>
 
@@ -298,7 +483,34 @@ const styles = StyleSheet.create({
         borderRadius: 30,
     
     },
+    containerIndicator: {
+        flex: 1,
+        justifyContent: 'center'
+      },
+      horizontalIndicator: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        padding: 10
+      }
   });
 
-  export default HomeScreen;
+
+const mapStateToProps = ({ auth }) => {
+    return { 
+        userData: auth.data,
+        mainData: auth.mainData
+    }
+}
+
+const mapDispathToProps = dispatch => {
+    return {
+        saveUser: (user) => dispatch({ type: 'success', payload: user }),
+        saveData: (data) => dispatch({ type: 'main_data_loaded', payload: data }),
+        // writeFullNames: (fullNames) => dispatch({ type: 'writeFullNames', payload: fullNames })
+    }
+}
+
+export default connect(mapStateToProps, mapDispathToProps)(HomeScreen);
+
+  
 

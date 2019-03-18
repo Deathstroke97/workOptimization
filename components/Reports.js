@@ -6,11 +6,17 @@ import { ListItem } from 'react-native-elements'
 class Reports extends Component {
     
     handlePress = (type, data, color) => {
-        if (type === 'Recent Completed') {
-            this.props.navigation.navigate('Recent', {
+        if (type === 'Finished') {
+            this.props.navigation.navigate('Finished', {
                 data: data,
                 color: color
             })
+        }
+        else if (type === 'Approved') {
+            this.props.navigation.navigate('Approved', {
+                data: data,
+                color: color
+            }) 
         }
         else {
             this.props.navigation.navigate('New', {
@@ -23,20 +29,22 @@ class Reports extends Component {
     render() {
         return(
             <View style={styles.main}>
-             {this.props.reports.map((report, index) => {
-                 if (report.text === 'Active') return;
+             {this.props.newReports.map((report, index) => {
+                 
+                 if (report && report.length > 0) {
                 return <ListItem key={index} 
-                    title={report.text}
+                    title={report[0].attachedTo.type}
                     containerStyle={styles.container}
                     // rightTitle='See All'
                     rightElement={
-                    <TouchableOpacity onPress={() => this.handlePress(report.text, report.data, report.color)}>
+                    <TouchableOpacity onPress={() => this.handlePress(report[0].status, report, report[0].attachedTo.color)}>
                         <Text style={{color: '#59bce5'}}>See All</Text>
                     </TouchableOpacity>}
                     
 
                 >
                 </ListItem>
+                 }
             })
              }
             </View>
@@ -63,3 +71,7 @@ const styles = StyleSheet.create({
         
     ,
   });
+
+
+
+  
